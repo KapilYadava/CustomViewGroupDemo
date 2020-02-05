@@ -61,7 +61,7 @@ public class MyRelativeLayout extends ViewGroup {
                         imageView.layout(0, 0, 100, 100);
                     }
                     if (getChildAt(i) instanceof  Button){
-                        button.layout(500, 100, 600, 200);
+                        button.layout(300, 100, 600, 200);
                     }
                 }
             }
