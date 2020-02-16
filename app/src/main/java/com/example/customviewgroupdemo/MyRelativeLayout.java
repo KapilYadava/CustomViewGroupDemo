@@ -3,120 +3,71 @@ package com.example.customviewgroupdemo;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MyRelativeLayout extends ViewGroup {
+public class MyRelativeLayout extends RelativeLayout {
 
-    final ViewGroup myViewGroup;
-    final ViewGroup myViewGroupLogo;
     final int width;
     final int height;
-    private static Button button;
-    private boolean okButton;
+    private Button button;
+    private static boolean okButton;
+    private static View view;
 
     public MyRelativeLayout(final Context context, final int width, final int height, boolean okButton){
         super(context);
         this.width = width;
         this.height = height;
         this.okButton = okButton;
-        final TextView textView = new TextView(context);
-        textView.setBackgroundColor(getResources().getColor(R.color.colorAccent));
-        //textView.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
-        //textView.setGravity(Gravity.CENTER);
-        textView.setText("Hi This is Kapil");
+        view  = LayoutInflater.from(context).inflate(R.layout.activity_main, null, false);
+        RelativeLayout.LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        params.setMargins(24, 1400, 24, 0);
+        //params.addRule(CENTER_IN_PARENT);
+        view.setLayoutParams(params);
+        addView(view);
 
-        final TextView textView1 = new TextView(context);
-        textView1.setBackgroundColor(getResources().getColor(R.color.colorAccent));
-        //textView.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
-        //textView.setGravity(Gravity.CENTER);
-        textView1.setText("Hi This is Kapil1");
-
-        final ImageView imageView = new ImageView(context);
-        imageView.setBackgroundResource(R.drawable.ic_launcher_foreground);
-
-        final ImageView imageView1 = new ImageView(context);
-        imageView1.setBackgroundResource(R.drawable.ic_launcher_foreground);
-
-
-        myViewGroup = new ViewGroup(context) {
-            @Override
-            protected void onLayout(boolean changed, int l, int t, int r, int b) {
-
-                int child = getChildCount();
-
-                for (int i=0; i<child; i++){
-                    if (getChildAt(i) instanceof TextView){
-                        textView.layout(0, 0 ,600, 200);
-                        textView.setGravity(Gravity.CENTER);
-                    }
-
-                    if (getChildAt(i) instanceof ImageView){
-                        imageView.layout(0, 0, 100, 100);
-                    }
-                    if (getChildAt(i) instanceof  Button){
-                        button.layout(300, 100, 600, 200);
-                    }
-                }
-            }
-        };
-
-        myViewGroupLogo = new ViewGroup(context) {
-            @Override
-            protected void onLayout(boolean changed, int l, int t, int r, int b) {
-
-                int child = getChildCount();
-
-                for (int i=0; i<child; i++){
-                    if (getChildAt(i) instanceof TextView){
-                        textView1.layout(0, 1380, width, 1450);
-                        textView1.setGravity(Gravity.CENTER);
-                    }
-
-                    if (getChildAt(i) instanceof ImageView){
-                        imageView1.layout(0, 1300, 200, 1500);
-                    }
-                }
-            }
-        };
-
-//        myViewGroup.setLayoutParams(new ViewGroup.LayoutParams(width, height));
-//        myViewGroup.setTop(100);
-//        myViewGroup.setLeft(100);
-        myViewGroup.addView(textView);
-        myViewGroup.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-        myViewGroup.addView(imageView);
-
-        myViewGroupLogo.addView(textView1);
-        myViewGroupLogo.addView(imageView1);
-        myViewGroupLogo.setBackgroundColor(getResources().getColor(android.R.color.black));
-
-        if (okButton){
-            button = new Button(context);
-            button.setText("Turn On");
-            myViewGroup.addView(button);
-        }
-
-        addView(myViewGroup);
-
-
-        //addView(myViewGroupLogo);
+        init();
     }
 
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+    public void init(){
+
+        button = findViewById(R.id.button);
+        final TextView textView = findViewById(R.id.description);
+        textView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                textView.getViewTreeObserver().removeOnPreDrawListener(this);
+
+                RelativeLayout.LayoutParams params1= (RelativeLayout.LayoutParams) button.getLayoutParams();
+                RelativeLayout.LayoutParams params2= (RelativeLayout.LayoutParams) textView.getLayoutParams();
+                if (textView.getLineCount() > 1){
+                    params1.addRule(RelativeLayout.BELOW, R.id.description);
+                    params1.setMargins(0, 100, 0, 0);
+                    params2.removeRule(RelativeLayout.LEFT_OF);
+                    button.setLayoutParams(params1);
+                }
+
+                return true;
+            }
+        });
+
         if (okButton){
-            myViewGroup.layout(100, 500, width-200, height-1300);
+            button.setVisibility(VISIBLE);
+            RelativeLayout.LayoutParams params= (RelativeLayout.LayoutParams)view.getLayoutParams();
+            params.addRule(CENTER_IN_PARENT);
         }else{
-            myViewGroup.layout(100, 1500, width-200, height-400);
+            button.setVisibility(GONE);
         }
-        //myViewGroupLogo.layout(l, t, width-200, height-500);
+
     }
 
     static class OrientationListener extends OrientationEventListener {
@@ -136,21 +87,43 @@ public class MyRelativeLayout extends ViewGroup {
             if( (orientation < 35 || orientation > 325) && rotation!= ROTATION_O){ // PORTRAIT
                 rotation = ROTATION_O;
                 Toast.makeText(context, "ROTATION_O", Toast.LENGTH_LONG).show();
-                button.setRotation(0);
+                view.setRotation(0);
+                if (!okButton){
+                    view.setTranslationY(200);
+                    view.setTranslationX(0);
+                }else{
+                    RelativeLayout.LayoutParams params= (RelativeLayout.LayoutParams)view.getLayoutParams();
+                    params.addRule(CENTER_IN_PARENT);
+                }
             }
             else if( orientation > 145 && orientation < 215 && rotation!=ROTATION_180){ // REVERSE PORTRAIT
                 rotation = ROTATION_180;
                 //menuButton.startAnimation(toPortAnim);
                 Toast.makeText(context, "ROTATION_180", Toast.LENGTH_LONG).show();
-                button.setRotation(180);
+                //view.setRotation(180);
             }
             else if(orientation > 55 && orientation < 125 && rotation!=ROTATION_270){ // REVERSE LANDSCAPE
                 rotation = ROTATION_270;
-                button.setRotation(270);
+                view.setRotation(270);
+                if (okButton){
+                    RelativeLayout.LayoutParams params= (RelativeLayout.LayoutParams)view.getLayoutParams();
+                    params.addRule(CENTER_IN_PARENT);
+                }else {
+                    view.setTranslationY(-300);
+                    view.setTranslationX(-200);
+                }
+
             }
             else if(orientation > 235 && orientation < 305 && rotation!=ROTATION_90){ //LANDSCAPE
                 rotation = ROTATION_90;
-                button.setRotation(90);
+                view.setRotation(90);
+                if (okButton){
+                    RelativeLayout.LayoutParams params= (RelativeLayout.LayoutParams)view.getLayoutParams();
+                    params.addRule(CENTER_IN_PARENT);
+                }else {
+                    view.setTranslationY(-300);
+                    view.setTranslationX(-200);
+                }
             }
         }
     }

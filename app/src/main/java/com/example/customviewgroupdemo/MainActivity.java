@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         int width = metrics.widthPixels;
         int height = metrics.heightPixels;
-        ViewGroup relativeLayout = new MyRelativeLayout(this, width, height, true);
+        ViewGroup relativeLayout = new MyRelativeLayout(this, width, height, false);
         //relativeLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width, height);
         addContentView(relativeLayout, params);
